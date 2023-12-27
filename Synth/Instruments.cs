@@ -40,5 +40,10 @@
 			public double Param;
 			public int Pan;
 		}
+		public struct DELAY {
+			public double Time;
+			public double Send;
+			public double Cross;
+		}
 	}
 }

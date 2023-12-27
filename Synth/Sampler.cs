@@ -102,10 +102,6 @@ namespace Synth {
 			}
 		}
 		public static void NoteOn(Channel ch, int noteNum, int velo) {
-			if (velo == 0) {
-				NoteOff(ch, noteNum);
-				return;
-			}
 			for (int i = 0; i < INSTANCES.Length; i++) {
 				var smpl = INSTANCES[i];
 				if (smpl.mCh == ch && smpl.mNoteNum == noteNum && smpl.mState >= State.Press) {
@@ -159,7 +155,7 @@ namespace Synth {
 		}
 
 		void WritePWM() {
-			for (int i = 0; i < SystemValue.Bufferlength; i++) {
+			for (int i = 0; i < SystemValue.BufferLength; i++) {
 				#region EG
 				switch (mState) {
 				case State.Purge:
