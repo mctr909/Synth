@@ -138,7 +138,7 @@ namespace Synth {
 					smpl.mPitchAttack = true;
 					smpl.mLpfL = new LPF();
 					smpl.mLpfR = new LPF();
-					smpl.mWriteProc = smpl.WritePWM;
+					smpl.mWriteProc = smpl.WriteSaw;
 					smpl.mState = State.Press;
 					return;
 				}
@@ -270,6 +270,194 @@ namespace Synth {
 					osc.Phase += oDelta;
 					osc.Phase -= (int)osc.Phase;
 					osc.Value += (osc.Phase < oWidth) ? 0.125 : -0.125;
+					osc.Phase += oDelta;
+					osc.Value *= oGain;
+					sumL += osc.Value;// * oPan;
+					sumR += osc.Value;// * oPan;
+				}
+				#endregion
+				#region LPF
+				double ka1, ka2, kb1, kb2;
+				{
+					var rad = mEgLpf * ADJUST;
+					var rad_2 = rad * rad;
+					var c = INV_FACT8;
+					c *= rad_2;
+					c -= INV_FACT6;
+					c *= rad_2;
+					c += INV_FACT4;
+					c *= rad_2;
+					c -= INV_FACT2;
+					c *= rad_2;
+					c++;
+					var s = INV_FACT9;
+					s *= rad_2;
+					s -= INV_FACT7;
+					s *= rad_2;
+					s += INV_FACT5;
+					s *= rad_2;
+					s -= INV_FACT3;
+					s *= rad_2;
+					s++;
+					s *= rad;
+					var alpha = s / (mCh.EG.LPF.Resonance * 4.0 + 1.0);
+					var ka0 = alpha + 1.0;
+					ka1 = -2.0 * c / ka0;
+					ka2 = (1.0 - alpha) / ka0;
+					kb1 = (1.0 - c) / ka0;
+					kb2 = kb1 * 0.5;
+				}
+				{
+					var input = sumL;
+					var output = kb2 * input
+						+ kb1 * mLpfL.b11
+						+ kb2 * mLpfL.b12
+						- ka1 * mLpfL.a11
+						- ka2 * mLpfL.a12
+					;
+					mLpfL.a12 = mLpfL.a11;
+					mLpfL.a11 = output;
+					mLpfL.b12 = mLpfL.b11;
+					mLpfL.b11 = input;
+					input = output;
+					output = kb2 * input
+						+ kb1 * mLpfL.b21
+						+ kb2 * mLpfL.b22
+						- ka1 * mLpfL.a21
+						- ka2 * mLpfL.a22
+					;
+					mLpfL.a22 = mLpfL.a21;
+					mLpfL.a21 = output;
+					mLpfL.b22 = mLpfL.b21;
+					mLpfL.b21 = input;
+					mCh.InputL[i] += output;
+				}
+				{
+					var input = sumR;
+					var output = kb2 * input
+						+ kb1 * mLpfR.b11
+						+ kb2 * mLpfR.b12
+						- ka1 * mLpfR.a11
+						- ka2 * mLpfR.a12
+					;
+					mLpfR.a12 = mLpfR.a11;
+					mLpfR.a11 = output;
+					mLpfR.b12 = mLpfR.b11;
+					mLpfR.b11 = input;
+					input = output;
+					output = kb2 * input
+						+ kb1 * mLpfR.b21
+						+ kb2 * mLpfR.b22
+						- ka1 * mLpfR.a21
+						- ka2 * mLpfR.a22
+					;
+					mLpfR.a22 = mLpfR.a21;
+					mLpfR.a21 = output;
+					mLpfR.b22 = mLpfR.b21;
+					mLpfR.b21 = input;
+					mCh.InputR[i] += output;
+				}
+				#endregion
+			}
+		}
+
+		void WriteSaw() {
+			for (int i = 0; i < SystemValue.BufferLength; i++) {
+				#region EG
+				switch (mState) {
+				case State.Purge:
+					mEgAmp -= mEgAmp * 0.1;
+					break;
+				case State.Press:
+					if (mAmpAttack) {
+						mEgAmp += (1.0 - mEgAmp) * SystemValue.DeltaTime / mCh.EG.Amp.Attack;
+						if (0.995 <= mEgAmp) {
+							mAmpAttack = false;
+						}
+					} else {
+						mEgAmp += (mCh.EG.Amp.Sustain - mEgAmp) * SystemValue.DeltaTime / mCh.EG.Amp.Decay;
+					}
+					if (mLpfAttack) {
+						mEgLpf += (mCh.EG.LPF.Level - mEgLpf) * SystemValue.DeltaTime / mCh.EG.LPF.Attack;
+						if (0.995 * mCh.EG.LPF.Level <= mEgLpf && mEgLpf <= 1.005 * mCh.EG.LPF.Level) {
+							mLpfAttack = false;
+						}
+					} else {
+						mEgLpf += (mCh.EG.LPF.Sustain - mEgLpf) * SystemValue.DeltaTime / mCh.EG.LPF.Decay;
+					}
+					if (mPitchAttack) {
+						mEgPitch += (mCh.EG.Pitch.Level - mEgPitch) * SystemValue.DeltaTime / mCh.EG.Pitch.Attack;
+						if (0.995 * mCh.EG.Pitch.Level <= mEgPitch && mEgPitch <= 1.005 * mCh.EG.Pitch.Level) {
+							mPitchAttack = false;
+						}
+					} else {
+						mEgPitch += (1.0 - mEgPitch) * SystemValue.DeltaTime / mCh.EG.Pitch.Decay;
+					}
+					break;
+				case State.Release:
+					mEgAmp -= mEgAmp * SystemValue.DeltaTime / mCh.EG.Amp.Release;
+					mEgLpf += (mCh.EG.LPF.Fall - mEgLpf) * SystemValue.DeltaTime / mCh.EG.LPF.Release;
+					mEgPitch += (mCh.EG.Pitch.Fall - mEgPitch) * SystemValue.DeltaTime / mCh.EG.Pitch.Release;
+					break;
+				case State.Hold:
+					mEgAmp -= mEgAmp * SystemValue.DeltaTime / mCh.EG.Amp.Hold;
+					mEgLpf += (mCh.EG.LPF.Fall - mEgLpf) * SystemValue.DeltaTime / mCh.EG.LPF.Release;
+					mEgPitch += (mCh.EG.Pitch.Fall - mEgPitch) * SystemValue.DeltaTime / mCh.EG.Pitch.Release;
+					break;
+				}
+				if (!(mState == State.Press && mAmpAttack) && mEgAmp < 0.001) {
+					mState = State.Free;
+					break;
+				}
+				mGain += (mCh.Gain * mEgAmp * mVelo - mGain) * 0.1;
+				mPan += (mCh.Pan - mPan) * 0.1;
+				#endregion
+				#region LFO
+				{
+					var lfo = mLfo[0];
+					lfo.Phase -= (int)lfo.Phase;
+					var indexD = SIN_LENGTH * lfo.Phase;
+					var index = (int)indexD;
+					var a2b = indexD - index;
+					lfo.Value = SIN_TABLE[index] * (1.0 - a2b) + SIN_TABLE[index + 1] * a2b;
+					lfo.Value = 1.0 + lfo.Value * lfo.Depth;
+					lfo.Depth += (mCh.LFO1.Depth - lfo.Depth) * SystemValue.DeltaTime / mCh.LFO1.Delay;
+					lfo.Phase += mCh.LFO1.Rate * SystemValue.DeltaTime * 2;
+				}
+				#endregion
+				#region OSC
+				var delta = mCh.Pitch * mEgPitch * mLfo[0].Value * mDelta;
+				var sumL = 0.0;
+				var sumR = 0.0;
+				for (int o = 0; o < 8; o++) {
+					var chOSC = mCh.OSC[o];
+					var oGain = chOSC.Gain * mGain * 0.25;
+					var oDelta = chOSC.Pitch * delta;
+					var oPan = Math.Max(-1, Math.Min(1, chOSC.Pan + mPan));
+					var osc = mOsc[o];
+					osc.Phase -= (int)osc.Phase;
+					osc.Value = osc.Phase - (int)(osc.Phase * 2);
+					osc.Phase += oDelta;
+					osc.Phase -= (int)osc.Phase;
+					osc.Value += osc.Phase - (int)(osc.Phase * 2);
+					osc.Phase += oDelta;
+					osc.Phase -= (int)osc.Phase;
+					osc.Value += osc.Phase - (int)(osc.Phase * 2);
+					osc.Phase += oDelta;
+					osc.Phase -= (int)osc.Phase;
+					osc.Value += osc.Phase - (int)(osc.Phase * 2);
+					osc.Phase += oDelta;
+					osc.Phase -= (int)osc.Phase;
+					osc.Value += osc.Phase - (int)(osc.Phase * 2);
+					osc.Phase += oDelta;
+					osc.Phase -= (int)osc.Phase;
+					osc.Value += osc.Phase - (int)(osc.Phase * 2);
+					osc.Phase += oDelta;
+					osc.Phase -= (int)osc.Phase;
+					osc.Value += osc.Phase - (int)(osc.Phase * 2);
+					osc.Phase += oDelta;
+					osc.Phase -= (int)osc.Phase;
+					osc.Value += osc.Phase - (int)(osc.Phase * 2);
 					osc.Phase += oDelta;
 					osc.Value *= oGain;
 					sumL += osc.Value;// * oPan;

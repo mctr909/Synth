@@ -9,10 +9,10 @@
 			public static EG_AMP Construct() {
 				return new EG_AMP() {
 					Attack = 0.001,
-					Decay = 0.001,
+					Decay = 0.1,
 					Release = 0.1,
 					Hold = 0.001,
-					Sustain = 1.0
+					Sustain = 0.66
 				};
 			}
 		}
@@ -27,14 +27,14 @@
 			public double Resonance;
 			public static EG_LPF Construct() {
 				return new EG_LPF() {
-					Attack = 0.001,
-					Decay = 0.05,
+					Attack = 0.05,
+					Decay = 0.1,
 					Release = 0.1,
-					Rise = 6000 / 44100.0,
-					Level = 6000 / 44100.0,
-					Sustain = 800 / 44100.0,
-					Fall = 800 / 44100.0,
-					Resonance = 0.4
+					Rise = 12000 / 44100.0,
+					Level = 4000 / 44100.0,
+					Sustain = 8000 / 44100.0,
+					Fall = 2000 / 44100.0,
+					Resonance = 0.1
 				};
 			}
 		}
@@ -50,7 +50,7 @@
 					Attack = 0.02,
 					Decay = 0.001,
 					Release = 0.001,
-					Rise = 0.5,
+					Rise = 0.9,
 					Level = 1.0,
 					Fall = 1.0
 				};
@@ -73,9 +73,9 @@
 			public double Delay;
 			public double Depth;
 			public double Rate;
-			public static LFO Construct(double depth = 0.05, double rate = 4) {
+			public static LFO Construct(double depth = 0.0, double rate = 4) {
 				return new LFO() {
-					Delay = 1,
+					Delay = 0.5,
 					Depth = depth,
 					Rate = rate
 				};
@@ -94,8 +94,8 @@
 			public static DELAY Construct() {
 				return new DELAY() {
 					Time = 0.2,
-					Send = 0.3,
-					Cross = 0.25
+					Send = 0.4,
+					Cross = 0.33
 				};
 			}
 		}

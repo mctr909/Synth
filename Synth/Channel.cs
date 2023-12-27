@@ -11,10 +11,10 @@ namespace Synth {
 		public Instruments.EG EG = Instruments.EG.Construct();
 		public Instruments.DELAY Delay = Instruments.DELAY.Construct();
 		public Instruments.LFO LFO1 = Instruments.LFO.Construct();
-		public Instruments.LFO LFO2 = Instruments.LFO.Construct(0.4, 1.2);
+		public Instruments.LFO LFO2 = Instruments.LFO.Construct(0.0, 1.2);
 		public Instruments.OSC[] OSC = new Instruments.OSC[8];
 
-		public double Gain = 1.0;
+		public double Gain = 0.5;
 		public double Pitch = 1.0;
 		public double Pan = 0.0;
 		public double Resonance = 0.0;
@@ -41,15 +41,28 @@ namespace Synth {
 				INSTANCES = new Channel[16 * ports];
 				for (int i = 0; i < INSTANCES.Length; i++) {
 					var ch = new Channel();
-					ch.OSC[0].Gain = 0.6;
+					ch.OSC[0].Gain = 0.33;
 					ch.OSC[0].Pitch = 1.01;
 					ch.OSC[0].Param = 0.5;
-					ch.OSC[1].Gain = 0.6;
+					ch.OSC[1].Gain = 0.33;
 					ch.OSC[1].Pitch = 0.99;
 					ch.OSC[1].Param = 0.5;
-					ch.OSC[2].Gain = 0.6;
-					ch.OSC[2].Pitch = 2.0;
+					ch.OSC[2].Gain = 0.66;
+					ch.OSC[2].Pitch = 1.0;
 					ch.OSC[2].Param = 0.5;
+					ch.OSC[3].Gain = 0.33;
+					ch.OSC[3].Pitch = 1.02;
+					ch.OSC[3].Param = 0.5;
+					ch.OSC[4].Gain = 0.33;
+					ch.OSC[4].Pitch = 0.98;
+					ch.OSC[4].Param = 0.5;
+					ch.OSC[5].Gain = 0.33;
+					ch.OSC[5].Pitch = 0.975;
+					ch.OSC[5].Param = 0.5;
+					ch.OSC[6].Gain = 0.33;
+					ch.OSC[6].Pitch = 1.025;
+					ch.OSC[6].Param = 0.5;
+
 					INSTANCES[i] = ch;
 				}
 			}
@@ -141,7 +154,7 @@ namespace Synth {
 				{
 					mRmsSumL += outputL * outputL;
 					mRmsSumR += outputR * outputR;
-					var att = 1.0 - 30.0 / SystemValue.SampleRate;
+					var att = 1.0 - 3.0 / SystemValue.SampleRate;
 					mRmsSumL *= att;
 					mRmsSumR *= att;
 					var gain = 1.0 / att - 1.0;
@@ -154,7 +167,7 @@ namespace Synth {
 				#endregion
 
 				if (mState == State.Active) {
-					if (RmsL < 0.00001 && RmsR < 0.00001) {
+					if (RmsL < 0.0000001 && RmsR < 0.0000001) {
 						mState = State.Free;
 						break;
 					}
