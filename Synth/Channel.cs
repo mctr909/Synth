@@ -9,10 +9,10 @@ namespace Synth {
 		}
 
 		public Instruments.EG EG = Instruments.EG.Construct();
-		public Instruments.LFO LFO1 = new Instruments.LFO();
-		public Instruments.LFO LFO2 = new Instruments.LFO();
+		public Instruments.DELAY Delay = Instruments.DELAY.Construct();
+		public Instruments.LFO LFO1 = Instruments.LFO.Construct();
+		public Instruments.LFO LFO2 = Instruments.LFO.Construct(0.4, 1.2);
 		public Instruments.OSC[] OSC = new Instruments.OSC[8];
-		public Instruments.DELAY Delay = new Instruments.DELAY();
 
 		public double Gain = 1.0;
 		public double Pitch = 1.0;
@@ -41,9 +41,15 @@ namespace Synth {
 				INSTANCES = new Channel[16 * ports];
 				for (int i = 0; i < INSTANCES.Length; i++) {
 					var ch = new Channel();
-					ch.OSC[0].Gain = 1.0;
-					ch.OSC[0].Pitch = 1.0;
+					ch.OSC[0].Gain = 0.6;
+					ch.OSC[0].Pitch = 1.01;
 					ch.OSC[0].Param = 0.5;
+					ch.OSC[1].Gain = 0.6;
+					ch.OSC[1].Pitch = 0.99;
+					ch.OSC[1].Param = 0.5;
+					ch.OSC[2].Gain = 0.6;
+					ch.OSC[2].Pitch = 2.0;
+					ch.OSC[2].Param = 0.5;
 					INSTANCES[i] = ch;
 				}
 			}
@@ -135,26 +141,26 @@ namespace Synth {
 				{
 					mRmsSumL += outputL * outputL;
 					mRmsSumR += outputR * outputR;
-					var att = 1.0 - 0.2 / SystemValue.SampleRate;
+					var att = 1.0 - 30.0 / SystemValue.SampleRate;
 					mRmsSumL *= att;
 					mRmsSumR *= att;
 					var gain = 1.0 / att - 1.0;
 					RmsL = mRmsSumL * gain;
 					RmsR = mRmsSumR * gain;
-					att = 1.0 - 1.0 / SystemValue.SampleRate;
+					att = 1.0 - 10.0 / SystemValue.SampleRate;
 					PeakL = Math.Max(PeakL * att, Math.Abs(outputL));
 					PeakR = Math.Max(PeakR * att, Math.Abs(outputR));
 				}
 				#endregion
 
 				if (mState == State.Active) {
-					if (RmsL < 0.000001 && RmsR < 0.000001) {
+					if (RmsL < 0.00001 && RmsR < 0.00001) {
 						mState = State.Free;
 						break;
 					}
 				}
 				if (mState == State.Standby) {
-					if (0.00001 <= RmsL || 0.00001 <= RmsR) {
+					if (0.0001 <= RmsL || 0.0001 <= RmsR) {
 						mState = State.Active;
 					}
 				}

@@ -220,10 +220,9 @@ namespace Synth {
 					var index = (int)indexD;
 					var a2b = indexD - index;
 					lfo.Value = SIN_TABLE[index] * (1.0 - a2b) + SIN_TABLE[index + 1] * a2b;
-					lfo.Value *= lfo.Depth;
-					lfo.Value = 1.0; /// TODO: set pitch lfo
+					lfo.Value = 1.0 + lfo.Value * lfo.Depth;
 					lfo.Depth += (mCh.LFO1.Depth - lfo.Depth) * SystemValue.DeltaTime / mCh.LFO1.Delay;
-					lfo.Phase += mCh.LFO1.Rate * SystemValue.DeltaTime;
+					lfo.Phase += mCh.LFO1.Rate * SystemValue.DeltaTime * 2;
 				}
 				{
 					var lfo = mLfo[1];
@@ -233,9 +232,8 @@ namespace Synth {
 					var a2b = indexD - index;
 					lfo.Value = SIN_TABLE[index] * (1.0 - a2b) + SIN_TABLE[index + 1] * a2b;
 					lfo.Value *= lfo.Depth;
-					lfo.Value = 0.0; /// TODO: set pwm lfo
 					lfo.Depth += (mCh.LFO2.Depth - lfo.Depth) * SystemValue.DeltaTime / mCh.LFO2.Delay;
-					lfo.Phase += mCh.LFO2.Rate * SystemValue.DeltaTime;
+					lfo.Phase += mCh.LFO2.Rate * SystemValue.DeltaTime * 2;
 				}
 				#endregion
 				#region OSC

@@ -10,7 +10,7 @@
 				return new EG_AMP() {
 					Attack = 0.001,
 					Decay = 0.001,
-					Release = 0.01,
+					Release = 0.1,
 					Hold = 0.001,
 					Sustain = 1.0
 				};
@@ -29,11 +29,11 @@
 				return new EG_LPF() {
 					Attack = 0.001,
 					Decay = 0.05,
-					Release = 0.001,
+					Release = 0.1,
 					Rise = 6000 / 44100.0,
 					Level = 6000 / 44100.0,
-					Sustain = 80 / 44100.0,
-					Fall = 80 / 44100.0,
+					Sustain = 800 / 44100.0,
+					Fall = 800 / 44100.0,
 					Resonance = 0.4
 				};
 			}
@@ -47,10 +47,10 @@
 			public double Fall;
 			public static EG_PITCH Construct() {
 				return new EG_PITCH() {
-					Attack = 0.001,
+					Attack = 0.02,
 					Decay = 0.001,
 					Release = 0.001,
-					Rise = 1.0,
+					Rise = 0.5,
 					Level = 1.0,
 					Fall = 1.0
 				};
@@ -73,6 +73,13 @@
 			public double Delay;
 			public double Depth;
 			public double Rate;
+			public static LFO Construct(double depth = 0.05, double rate = 4) {
+				return new LFO() {
+					Delay = 1,
+					Depth = depth,
+					Rate = rate
+				};
+			}
 		}
 		public struct OSC {
 			public double Gain;
@@ -84,6 +91,13 @@
 			public double Time;
 			public double Send;
 			public double Cross;
+			public static DELAY Construct() {
+				return new DELAY() {
+					Time = 0.2,
+					Send = 0.3,
+					Cross = 0.25
+				};
+			}
 		}
 	}
 }

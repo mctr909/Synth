@@ -22,14 +22,20 @@ namespace Synth {
 			mPlayback.Dispose();
 		}
 
-		private void button1_Click(object sender, EventArgs e) {
-			Channel.SendMessage(0, new byte[] { 0x90, 0x10, 0x1F });
-			Channel.SendMessage(0, new byte[] { 0x90, 0x1C, 0x1F });
+		private void button1_MouseDown(object sender, MouseEventArgs e) {
+			Channel.SendMessage(0, new byte[] { 0x90, 0x20, 0x1F });
 		}
 
-		private void button2_Click(object sender, EventArgs e) {
-			Channel.SendMessage(0, new byte[] { 0x80, 0x10 });
-			Channel.SendMessage(0, new byte[] { 0x80, 0x1C });
+		private void button1_MouseUp(object sender, MouseEventArgs e) {
+			Channel.SendMessage(0, new byte[] { 0x80, 0x20 });
+		}
+
+		private void button2_MouseDown(object sender, MouseEventArgs e) {
+			Channel.SendMessage(0, new byte[] { 0x90, 0x27, 0x1F });
+		}
+
+		private void button2_MouseUp(object sender, MouseEventArgs e) {
+			Channel.SendMessage(0, new byte[] { 0x80, 0x27 });
 		}
 	}
 }

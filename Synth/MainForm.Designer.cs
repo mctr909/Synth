@@ -35,7 +35,8 @@
 			this.button1.TabIndex = 0;
 			this.button1.Text = "button1";
 			this.button1.UseVisualStyleBackColor = true;
-			this.button1.Click += new System.EventHandler(this.button1_Click);
+			this.button1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.button1_MouseDown);
+			this.button1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.button1_MouseUp);
 			// 
 			// button2
 			// 
@@ -45,7 +46,8 @@
 			this.button2.TabIndex = 1;
 			this.button2.Text = "button2";
 			this.button2.UseVisualStyleBackColor = true;
-			this.button2.Click += new System.EventHandler(this.button2_Click);
+			this.button2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.button2_MouseDown);
+			this.button2.MouseUp += new System.Windows.Forms.MouseEventHandler(this.button2_MouseUp);
 			// 
 			// MainForm
 			// 
