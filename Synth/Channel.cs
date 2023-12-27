@@ -8,7 +8,7 @@ namespace Synth {
 			Active
 		}
 
-		public Instruments.EG EG = new Instruments.EG();
+		public Instruments.EG EG = Instruments.EG.Construct();
 		public Instruments.LFO LFO1 = new Instruments.LFO();
 		public Instruments.LFO LFO2 = new Instruments.LFO();
 		public Instruments.OSC[] OSC = new Instruments.OSC[8];
@@ -40,13 +40,13 @@ namespace Synth {
 			if (null == INSTANCES) {
 				INSTANCES = new Channel[16 * ports];
 				for (int i = 0; i < INSTANCES.Length; i++) {
-					INSTANCES[i] = new Channel();
+					var ch = new Channel();
+					ch.OSC[0].Gain = 1.0;
+					ch.OSC[0].Pitch = 1.0;
+					ch.OSC[0].Param = 0.5;
+					INSTANCES[i] = ch;
 				}
-				SetupBuffer();
 			}
-		}
-
-		public static void SetupBuffer() {
 			for (int i = 0; i < INSTANCES.Length; i++) {
 				var ch = INSTANCES[i];
 				ch.InputL = new double[SystemValue.BufferLength];
@@ -55,8 +55,6 @@ namespace Synth {
 				ch.mDelayTapR = new double[SystemValue.SampleRate];
 				ch.mDelayWritePos = 0.0;
 			}
-			SystemValue.BufferL = new double[SystemValue.BufferLength];
-			SystemValue.BufferR = new double[SystemValue.BufferLength];
 		}
 
 		public static void WriteBuffer() {
@@ -152,8 +150,8 @@ namespace Synth {
 				if (mState == State.Active) {
 					if (RmsL < 0.000001 && RmsR < 0.000001) {
 						mState = State.Free;
+						break;
 					}
-					break;
 				}
 				if (mState == State.Standby) {
 					if (0.00001 <= RmsL || 0.00001 <= RmsR) {

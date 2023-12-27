@@ -32,7 +32,7 @@ namespace Synth {
 
 		delegate void WriteProc();
 
-		const double ADJUST = 0.975 * Math.PI;
+		const double ADJUST = 0.975 * 2 * Math.PI;
 		const double INV_FACT2 = 5.00000000e-01;
 		const double INV_FACT3 = 1.66666667e-01;
 		const double INV_FACT4 = 4.16666667e-02;
@@ -60,8 +60,15 @@ namespace Synth {
 		bool mAmpAttack = true;
 		bool mLpfAttack = true;
 		bool mPitchAttack = true;
-		OSC[] mOsc = new OSC[8];
-		LFO[] mLfo = new LFO[2];
+		OSC[] mOsc = new OSC[] {
+			new OSC(), new OSC(),
+			new OSC(), new OSC(),
+			new OSC(), new OSC(),
+			new OSC(), new OSC()
+		};
+		LFO[] mLfo = new LFO[] {
+			new LFO(), new LFO()
+		};
 		LPF mLpfL = new LPF();
 		LPF mLpfR = new LPF();
 
@@ -116,7 +123,7 @@ namespace Synth {
 					smpl.mVelo = velo / 127.0;
 					smpl.mGain = 0.0;
 					smpl.mPan = ch.Pan;
-					smpl.mDelta = 220 * 0.125 * SystemValue.DeltaTime; /// TODO: NoteOn set noteNum
+					smpl.mDelta = Math.Pow(2.0, (noteNum + 3) / 12.0) * 13.75 * 0.125 * SystemValue.DeltaTime;
 					smpl.mLfo[0].Depth = 0.0;
 					smpl.mLfo[0].Phase = 0.0;
 					smpl.mLfo[0].Value = 0.0;
@@ -267,8 +274,8 @@ namespace Synth {
 					osc.Value += (osc.Phase < oWidth) ? 0.125 : -0.125;
 					osc.Phase += oDelta;
 					osc.Value *= oGain;
-					sumL += osc.Value * oPan;
-					sumR += osc.Value * oPan;
+					sumL += osc.Value;// * oPan;
+					sumR += osc.Value;// * oPan;
 				}
 				#endregion
 				#region LPF
@@ -295,7 +302,7 @@ namespace Synth {
 					s *= rad_2;
 					s++;
 					s *= rad;
-					var alpha = s / (mCh.Resonance * 4.0 + 1.0);
+					var alpha = s / (mCh.EG.LPF.Resonance * 4.0 + 1.0);
 					var ka0 = alpha + 1.0;
 					ka1 = -2.0 * c / ka0;
 					ka2 = (1.0 - alpha) / ka0;
