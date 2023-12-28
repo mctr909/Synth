@@ -89,6 +89,7 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="MidiReceive.cs" />
     <Compile Include="winmm\MidiLib.cs" />
     <Compile Include="winmm\MMResult.cs" />
     <Compile Include="Playback.cs" />

@@ -220,16 +220,16 @@ namespace WINMM {
 				case 0xB0:
 				case 0xE0:
 					Receive(new byte[] {
-					(byte)(dwParam1 & 0xFF),
-					(byte)((dwParam1 >> 8) & 0xFF),
-					(byte)((dwParam1 >> 16) & 0xFF)
-				});
+						(byte)(dwParam1 & 0xFF),
+						(byte)((dwParam1 >> 8) & 0xFF),
+						(byte)((dwParam1 >> 16) & 0xFF)
+					});
 					break;
 				case 0xC0:
 					Receive(new byte[] {
-					(byte)(dwParam1 & 0xFF),
-					(byte)((dwParam1 >> 8) & 0xFF)
-				});
+						(byte)(dwParam1 & 0xFF),
+						(byte)((dwParam1 >> 8) & 0xFF)
+					});
 					break;
 				}
 				midiInAddBuffer(mHandle, dwInstance, Marshal.SizeOf<MIDIHDR>());
@@ -239,10 +239,6 @@ namespace WINMM {
 					mStopped = true;
 					break;
 				}
-				var hdr = Marshal.PtrToStructure<MIDIHDR>(dwInstance);
-				Marshal.Copy(hdr.lpData, mBuffer, 0, BufferSize);
-				ReadBuffer();
-				midiInAddBuffer(mHandle, dwInstance, Marshal.SizeOf<MIDIHDR>());
 				break;
 			default:
 				break;

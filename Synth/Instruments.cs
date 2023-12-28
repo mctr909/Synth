@@ -53,10 +53,10 @@ namespace Synth {
 			public double Fall;
 			public static EG_PITCH GetDefault() {
 				return new EG_PITCH() {
-					Attack = 0.02,
+					Attack = 0.01,
 					Decay = 0.001,
 					Release = 0.001,
-					Rise = Math.Pow(2.0, -1.0 / 12.0),
+					Rise = Math.Pow(2.0, 1.0 / 12.0),
 					Level = 1.0,
 					Fall = 1.0
 				};

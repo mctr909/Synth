@@ -121,7 +121,7 @@ namespace Synth {
 					smpl.mVelo = velo / 127.0;
 					smpl.mGain = 0.0;
 					smpl.mPan = ch.Pan;
-					smpl.mDelta = Math.Pow(2.0, (noteNum + 3) / 12.0) * 13.75 * 0.125 * SystemValue.DeltaTime;
+					smpl.mDelta = Math.Pow(2.0, (noteNum - 9) / 12.0) * 13.75 * 0.125 * SystemValue.DeltaTime;
 					smpl.mLfo[0].Depth = 0.0;
 					smpl.mLfo[0].Phase = 0.0;
 					smpl.mLfo[0].Value = 0.0;

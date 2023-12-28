@@ -7,12 +7,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using WINMM;
 
 namespace Synth {
 	public partial class MainForm : Form {
+		MidiReceive mMidiReceive;
+
 		public MainForm() {
 			InitializeComponent();
 			Playback.Setup(44100, 256);
+			mMidiReceive = new MidiReceive();
+			mMidiReceive.SetDevice(0);
+			mMidiReceive.Open();
 		}
 
 		private void MainForm_FormClosing(object sender, FormClosingEventArgs e) {

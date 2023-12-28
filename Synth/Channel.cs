@@ -1,4 +1,6 @@
 ﻿using System;
+using static Synth.Channel;
+using static Synth.Instruments;
 
 namespace Synth {
 	internal class Channel {
@@ -23,10 +25,10 @@ namespace Synth {
 
 		public DELAY Delay = new DELAY(0.5);
 
-		public Instruments.OSC[] OSC = Instruments.OSC.GetDefault(8);
-		public Instruments.EG EG = Instruments.EG.GetDefault();
-		public Instruments.LFO LFO1 = new Instruments.LFO(0.01);
-		public Instruments.LFO LFO2 = new Instruments.LFO(0.0);
+		public OSC[] OSC = Instruments.OSC.GetDefault(8);
+		public EG EG = EG.GetDefault();
+		public LFO LFO1 = new LFO(0.01);
+		public LFO LFO2 = new LFO(0.0);
 
 		public double Gain = 0.5;
 		public double Pitch = 1.0;
@@ -47,6 +49,10 @@ namespace Synth {
 		double mDelayWritePos = 0.0;
 		double[] mDelayTapL = null;
 		double[] mDelayTapR = null;
+
+		int mVol = 100;
+		int mExp = 100;
+		int mDelayFeedback = 0;
 
 		public static Channel[] Construct(int ports = 1) {
 			var ret = new Channel[16 * ports];
@@ -116,17 +122,55 @@ namespace Synth {
 		}
 
 		void CtrlChg(int type, int value) {
-
+			switch (type) {
+			case 7:
+				mVol = value;
+				Gain = mVol / 127.0 * mExp / 127.0 * 0.5;
+				break;
+			case 11:
+				mExp = value;
+				Gain = mVol / 127.0 * mExp / 127.0 * 0.5;
+				break;
+			case 94:
+				mDelayFeedback = value;
+				Delay.Feedback = value / 127.0;
+				Delay.Send = value * 2 / 127.0;
+				break;
+			}
 		}
 
 		void ProgChg(int num) {
-			OSC[0] = new Instruments.OSC(0.33, 0.975, 0, 0.5);
-			OSC[1] = new Instruments.OSC(0.25, 0.98, 0, 0.5);
-			OSC[2] = new Instruments.OSC(0.25, 0.99, 0, 0.5);
-			OSC[3] = new Instruments.OSC(0.66, 1.00, 0, 0.5);
-			OSC[4] = new Instruments.OSC(0.25, 1.01, 0, 0.5);
-			OSC[5] = new Instruments.OSC(0.25, 1.02, 0, 0.5);
-			OSC[6] = new Instruments.OSC(0.33, 1.025, 0, 0.5);
+			if (32 <= num && num <= 39) {
+				EG = EG.GetDefault();
+				EG.Pitch.Rise = 1.0;
+				EG.LPF.Attack = 0.001;
+				EG.LPF.Decay = 0.04;
+				EG.LPF.Rise = 6000 / 44100.0;
+				EG.LPF.Level = 6000 / 44100.0;
+				EG.LPF.Sustain = 120 / 44100.0;
+				EG.LPF.Resonance = 0.33;
+				Delay.Feedback = mDelayFeedback / 127.0;
+				Delay.Send = mDelayFeedback * 2 / 127.0;
+				OSC[0] = new OSC(1.0);
+				OSC[1] = new OSC(0.0);
+				OSC[2] = new OSC(0.0);
+				OSC[3] = new OSC(0.0);
+				OSC[4] = new OSC(0.0);
+				OSC[5] = new OSC(0.0);
+				OSC[6] = new OSC(0.0);
+			} else {
+				EG = EG.GetDefault();
+				EG.Amp.Release = 0.05;
+				Delay.Feedback = mDelayFeedback / 127.0;
+				Delay.Send = mDelayFeedback * 2 / 127.0;
+				OSC[0] = new OSC(0.20, Math.Pow(2, -0.3 / 12.0), 0, 0.5);
+				OSC[1] = new OSC(0.15, Math.Pow(2, -0.2 / 12.0), 0, 0.5);
+				OSC[2] = new OSC(0.15, Math.Pow(2, -0.1 / 12.0), 0, 0.5);
+				OSC[3] = new OSC(0.30, 1.00, 0, 0.5);
+				OSC[4] = new OSC(0.15, Math.Pow(2, 0.1 / 12.0), 0, 0.5);
+				OSC[5] = new OSC(0.15, Math.Pow(2, 0.2 / 12.0), 0, 0.5);
+				OSC[6] = new OSC(0.20, Math.Pow(2, 0.3 / 12.0), 0, 0.5);
+			}
 		}
 
 		void PitchBend(int msb, int lsb) {
