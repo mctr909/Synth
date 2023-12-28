@@ -48,58 +48,55 @@ namespace Synth {
 		double[] mDelayTapL = null;
 		double[] mDelayTapR = null;
 
-		static Channel[] INSTANCES = null;
-
-		public static void Construct(int ports = 1) {
-			if (null == INSTANCES) {
-				INSTANCES = new Channel[16 * ports];
-				for (int i = 0; i < INSTANCES.Length; i++) {
-					INSTANCES[i] = new Channel();
-				}
+		public static Channel[] Construct(int ports = 1) {
+			var ret = new Channel[16 * ports];
+			for (int i = 0; i < ret.Length; i++) {
+				ret[i] = new Channel();
 			}
-			for (int i = 0; i < INSTANCES.Length; i++) {
-				var ch = INSTANCES[i];
+			for (int i = 0; i < ret.Length; i++) {
+				var ch = ret[i];
 				ch.InputL = new double[SystemValue.BufferLength];
 				ch.InputR = new double[SystemValue.BufferLength];
 				ch.mDelayTapL = new double[SystemValue.SampleRate];
 				ch.mDelayTapR = new double[SystemValue.SampleRate];
 				ch.mDelayWritePos = 0.0;
 			}
+			return ret;
 		}
 
-		public static void WriteBuffer(double[] bufferL, double[] bufferR) {
-			for (int i = 0; i < INSTANCES.Length; i++) {
-				var ch = INSTANCES[i];
+		public static void WriteBuffer(Channel[] channels, double[] bufferL, double[] bufferR) {
+			for (int i = 0; i < channels.Length; i++) {
+				var ch = channels[i];
 				if (State.Standby <= ch.mState) {
 					ch.Write(bufferL, bufferR);
 				}
 			}
 		}
 
-		public static void SendMessage(int port, byte[] message) {
+		public static void SendMessage(Channel[] channels, Sampler[] samplers, int port, byte[] message) {
 			var type = message[0] & 0xF0;
 			Channel ch;
 			if (0x80 <= type && type <= 0xE0) {
 				var chNum = (port << 4) | message[0] & 0xF;
-				if (INSTANCES.Length <= chNum) {
+				if (channels.Length <= chNum) {
 					return;
 				}
-				ch = INSTANCES[chNum];
+				ch = channels[chNum];
 			} else {
 				return;
 			}
 			switch (type) {
 			case 0x80:
-				Sampler.NoteOff(ch, message[1]);
+				Sampler.NoteOff(samplers, ch, message[1]);
 				break;
 			case 0x90:
 				if (0 == message[2]) {
-					Sampler.NoteOff(ch, message[1]);
+					Sampler.NoteOff(samplers, ch, message[1]);
 				} else {
 					if (ch.mState == State.Free) {
 						ch.mState = State.Standby;
 					}
-					Sampler.NoteOn(ch, message[1], message[2]);
+					Sampler.NoteOn(samplers, ch, message[1], message[2]);
 				}
 				break;
 			case 0xA0:

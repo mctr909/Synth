@@ -44,7 +44,6 @@ namespace Synth {
 
 		const int SIN_LENGTH = 96;
 		static double[] SIN_TABLE = null;
-		static Sampler[] INSTANCES = null;
 
 		WriteProc mWriteProc;
 		State mState = State.Free;
@@ -72,51 +71,50 @@ namespace Synth {
 		LPF mLpfL = new LPF();
 		LPF mLpfR = new LPF();
 
-		public static void Construct() {
-			if (null == INSTANCES) {
-				INSTANCES = new Sampler[128];
-				for (int i = 0; i < INSTANCES.Length; i++) {
-					INSTANCES[i] = new Sampler();
-				}
-				SIN_TABLE = new double[SIN_LENGTH + 1];
-				for (int i = 0; i < SIN_LENGTH; i++) {
-					SIN_TABLE[i] = Math.Sin(2 * Math.PI * i / SIN_LENGTH);
-				}
+		public static Sampler[] Construct() {
+			var ret = new Sampler[128];
+			for (int i = 0; i < ret.Length; i++) {
+				ret[i] = new Sampler();
 			}
+			SIN_TABLE = new double[SIN_LENGTH + 1];
+			for (int i = 0; i < SIN_LENGTH; i++) {
+				SIN_TABLE[i] = Math.Sin(2 * Math.PI * i / SIN_LENGTH);
+			}
+			return ret;
 		}
-		public static void Purge(Channel ch) {
-			for (int i = 0; i < INSTANCES.Length; i++) {
-				var smpl = INSTANCES[i];
+		public static void Purge(Sampler[] samplers, Channel ch) {
+			for (int i = 0; i < samplers.Length; i++) {
+				var smpl = samplers[i];
 				if (smpl.mCh == ch && State.Press <= smpl.mState) {
 					smpl.mState = State.Purge;
 				}
 			}
 		}
-		public static void HoldOff(Channel ch) {
-			for (int i = 0; i < INSTANCES.Length; i++) {
-				var smpl = INSTANCES[i];
+		public static void HoldOff(Sampler[] samplers, Channel ch) {
+			for (int i = 0; i < samplers.Length; i++) {
+				var smpl = samplers[i];
 				if (smpl.mCh == ch && smpl.mState == State.Hold) {
 					smpl.mState = State.Release;
 				}
 			}
 		}
-		public static void NoteOff(Channel ch, int noteNum) {
-			for (int i = 0; i < INSTANCES.Length; i++) {
-				var smpl = INSTANCES[i];
+		public static void NoteOff(Sampler[] samplers, Channel ch, int noteNum) {
+			for (int i = 0; i < samplers.Length; i++) {
+				var smpl = samplers[i];
 				if (smpl.mCh == ch && smpl.mNoteNum == noteNum && smpl.mState == State.Press) {
 					smpl.mState = ch.Hold ? State.Hold : State.Release;
 				}
 			}
 		}
-		public static void NoteOn(Channel ch, int noteNum, int velo) {
-			for (int i = 0; i < INSTANCES.Length; i++) {
-				var smpl = INSTANCES[i];
+		public static void NoteOn(Sampler[] samplers, Channel ch, int noteNum, int velo) {
+			for (int i = 0; i < samplers.Length; i++) {
+				var smpl = samplers[i];
 				if (smpl.mCh == ch && smpl.mNoteNum == noteNum && smpl.mState >= State.Press) {
 					smpl.mState = State.Purge;
 				}
 			}
-			for (int i = 0; i < INSTANCES.Length; i++) {
-				var smpl = INSTANCES[i];
+			for (int i = 0; i < samplers.Length; i++) {
+				var smpl = samplers[i];
 				if (smpl.mState == State.Free) {
 					smpl.mCh = ch;
 					smpl.mNoteNum = noteNum;
@@ -144,9 +142,9 @@ namespace Synth {
 				}
 			}
 		}
-		public static void WriteBuffer() {
-			for (int i = 0; i < INSTANCES.Length; i++) {
-				var smpl = INSTANCES[i];
+		public static void WriteBuffer(Sampler[] samplers) {
+			for (int i = 0; i < samplers.Length; i++) {
+				var smpl = samplers[i];
 				if (State.Purge <= smpl.mState) {
 					smpl.mWriteProc();
 				}

@@ -76,24 +76,6 @@ namespace Synth {
 			}
 		}
 		[StructLayout(LayoutKind.Sequential)]
-		public struct OSC {
-			public double Gain;
-			public double Pitch;
-			public double Pan;
-			public double Param;
-			public OSC(double gain, double pitch = 1.0, double pan = 0.0, double param = 0.0) {
-				Gain = gain;
-				Pitch = pitch;
-				Pan = pan;
-				Param = param;
-			}
-			public static OSC[] GetDefault(int count) {
-				var ret = new OSC[count];
-				ret[0] = new OSC(0.25);
-				return ret;
-			}
-		}
-		[StructLayout(LayoutKind.Sequential)]
 		public struct LFO {
 			public double Depth;
 			public double Rate;
@@ -116,16 +98,32 @@ namespace Synth {
 			public double Tune;
 		}
 		[StructLayout(LayoutKind.Sequential)]
-		public struct REGION {
+		public struct OSC {
 			public byte NoteLow;
 			public byte NoteHigh;
 			public byte VeloLow;
 			public byte VeloHigh;
-			public ushort Layer;
-			public ushort WaveIndex;
+			public int WaveIndex;
 			public double Gain;
-			public double Pan;
 			public double Pitch;
+			public double Pan;
+			public double Param;
+			public OSC(double gain, double pitch = 1.0, double pan = 0.0, double param = 0.0) {
+				NoteLow = 0;
+				NoteHigh = 127;
+				VeloLow = 0;
+				VeloHigh = 127;
+				WaveIndex = 0;
+				Gain = gain;
+				Pitch = pitch;
+				Pan = pan;
+				Param = param;
+			}
+			public static OSC[] GetDefault(int count) {
+				var ret = new OSC[count];
+				ret[0] = new OSC(0.25);
+				return ret;
+			}
 		}
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
 		public struct INST {
