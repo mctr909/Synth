@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 
 namespace Synth {
 	internal class Instruments {
+		[StructLayout(LayoutKind.Sequential)]
 		public struct EG_AMP {
 			public double Attack;
 			public double Decay;
@@ -18,6 +20,7 @@ namespace Synth {
 				};
 			}
 		}
+		[StructLayout(LayoutKind.Sequential)]
 		public struct EG_LPF {
 			public double Attack;
 			public double Decay;
@@ -40,6 +43,7 @@ namespace Synth {
 				};
 			}
 		}
+		[StructLayout(LayoutKind.Sequential)]
 		public struct EG_PITCH {
 			public double Attack;
 			public double Decay;
@@ -58,6 +62,7 @@ namespace Synth {
 				};
 			}
 		}
+		[StructLayout(LayoutKind.Sequential)]
 		public struct EG {
 			public EG_AMP Amp;
 			public EG_LPF LPF;
@@ -70,7 +75,7 @@ namespace Synth {
 				};
 			}
 		}
-
+		[StructLayout(LayoutKind.Sequential)]
 		public struct OSC {
 			public double Gain;
 			public double Pitch;
@@ -88,7 +93,7 @@ namespace Synth {
 				return ret;
 			}
 		}
-
+		[StructLayout(LayoutKind.Sequential)]
 		public struct LFO {
 			public double Depth;
 			public double Rate;
@@ -99,18 +104,48 @@ namespace Synth {
 				Delay = delay;
 			}
 		}
-
-		public struct DELAY {
-			public double Send;
-			public double Feedback;
-			public double Time;
-			public double Cross;
-			public DELAY(double send, double feedback = 0.5, double time = 0.2, double cross = 0.33) {
-				Send = send;
-				Feedback = feedback;
-				Time = time;
-				Cross = cross;
+		[StructLayout(LayoutKind.Sequential)]
+		public struct WAVE_INFO {
+			public int SampleRate;
+			public int LoopBegin;
+			public int LoopLength;
+			public bool LoopEnable;
+			public byte UnityNote;
+			private ushort Reserved;
+			public double Gain;
+			public double Tune;
+		}
+		[StructLayout(LayoutKind.Sequential)]
+		public struct REGION {
+			public byte NoteLow;
+			public byte NoteHigh;
+			public byte VeloLow;
+			public byte VeloHigh;
+			public ushort Layer;
+			public ushort WaveIndex;
+			public double Gain;
+			public double Pan;
+			public double Pitch;
+		}
+		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+		public struct INST {
+			public enum TYPE : byte {
+				PCM_NOTE,
+				PCM_DRUM,
+				PWM,
+				SAW,
+				TRI,
+				TRI_STEP,
+				FM
 			}
+			public TYPE Type;
+			public byte BankMSB;
+			public byte BankLSB;
+			public byte ProgNum;
+			public int RegionBegin;
+			public int RegionCount;
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 20)]
+			public string Name;
 		}
 	}
 }

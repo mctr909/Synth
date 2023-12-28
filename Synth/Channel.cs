@@ -2,18 +2,31 @@
 
 namespace Synth {
 	internal class Channel {
-		public enum State {
+		enum State {
 			Free,
 			Standby,
 			Active
 		}
 
+		public struct DELAY {
+			public double Send;
+			public double Feedback;
+			public double Time;
+			public double Cross;
+			public DELAY(double send, double feedback = 0.5, double time = 0.2, double cross = 0.33) {
+				Send = send;
+				Feedback = feedback;
+				Time = time;
+				Cross = cross;
+			}
+		}
+
+		public DELAY Delay = new DELAY(0.5);
+
 		public Instruments.OSC[] OSC = Instruments.OSC.GetDefault(8);
 		public Instruments.EG EG = Instruments.EG.GetDefault();
 		public Instruments.LFO LFO1 = new Instruments.LFO(0.1);
 		public Instruments.LFO LFO2 = new Instruments.LFO(0.0);
-
-		public Instruments.DELAY Delay = new Instruments.DELAY(0.5);
 
 		public double Gain = 0.5;
 		public double Pitch = 1.0;
@@ -54,11 +67,11 @@ namespace Synth {
 			}
 		}
 
-		public static void WriteBuffer() {
+		public static void WriteBuffer(double[] bufferL, double[] bufferR) {
 			for (int i = 0; i < INSTANCES.Length; i++) {
 				var ch = INSTANCES[i];
 				if (State.Standby <= ch.mState) {
-					ch.Write();
+					ch.Write(bufferL, bufferR);
 				}
 			}
 		}
@@ -123,7 +136,7 @@ namespace Synth {
 
 		}
 
-		void Write() {
+		void Write(double[] bufferL, double[] bufferR) {
 			for (int i = 0; i < SystemValue.BufferLength; i++) {
 				var outputL = InputL[i];
 				var outputR = InputR[i];
@@ -176,9 +189,8 @@ namespace Synth {
 						mState = State.Active;
 					}
 				}
-
-				SystemValue.BufferL[i] += outputL;
-				SystemValue.BufferR[i] += outputR;
+				bufferL[i] += outputL;
+				bufferR[i] += outputR;
 			}
 		}
 	}
