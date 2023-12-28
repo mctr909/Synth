@@ -173,6 +173,7 @@ namespace WINMM {
 		}
 
 		delegate void DCallback(IntPtr hwi, MM_WIM uMsg, int dwUser, IntPtr lpWaveHdr, int dwParam2);
+		DCallback mCallback;
 
 		#region dll
 		[DllImport("winmm.dll", SetLastError = true, CharSet = CharSet.Auto)]
@@ -212,12 +213,13 @@ namespace WINMM {
 
 		public WaveIn(int sampleRate = 44100, int channels = 2, int bufferSize = 256, int bufferCount = 32) :
 			base(sampleRate, channels, bufferSize, bufferCount) {
+			mCallback = Callback;
 		}
 
 		public override void Open() {
 			Close();
 			AllocHeader();
-			var mr = waveInOpen(ref mHandle, DeviceId, ref mWaveFormatEx, Callback, IntPtr.Zero);
+			var mr = waveInOpen(ref mHandle, DeviceId, ref mWaveFormatEx, mCallback, IntPtr.Zero);
 			if (MMRESULT.MMSYSERR_NOERROR != mr) {
 				return;
 			}
@@ -309,6 +311,7 @@ namespace WINMM {
 		}
 
 		delegate void DCallback(IntPtr hwo, MM_WOM uMsg, int dwUser, IntPtr lpWaveHdr, int dwParam2);
+		DCallback mCallback;
 
 		#region dll
 		[DllImport("winmm.dll", SetLastError = true, CharSet = CharSet.Auto)]
@@ -354,12 +357,13 @@ namespace WINMM {
 
 		public WaveOut(int sampleRate = 44100, int channels = 2, int bufferSize = 128, int bufferCount = 128) :
 			base(sampleRate, channels, bufferSize, bufferCount) {
+			mCallback = Callback;
 		}
 
 		public override void Open() {
 			Close();
 			AllocHeader();
-			var ret = waveOutOpen(ref mHandle, DeviceId, ref mWaveFormatEx, Callback, IntPtr.Zero, 0x00030000);
+			var ret = waveOutOpen(ref mHandle, DeviceId, ref mWaveFormatEx, mCallback, IntPtr.Zero, 0x00030000);
 			if (MMRESULT.MMSYSERR_NOERROR != ret) {
 				return;
 			}

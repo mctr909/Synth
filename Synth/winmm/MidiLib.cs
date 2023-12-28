@@ -118,6 +118,7 @@ namespace WINMM {
 		}
 
 		delegate void DCallback(IntPtr hmi, MM_MIM uMsg, IntPtr dwInstance, uint dwParam1, uint dwParam2);
+		DCallback mCallback;
 
 		#region dll
 		[DllImport("winmm.dll", SetLastError = true, CharSet = CharSet.Auto)]
@@ -157,12 +158,14 @@ namespace WINMM {
 			return list;
 		}
 
-		public MidiIn(int bufferSize = 1024, int bufferCount = 16) : base(bufferSize, bufferCount) { }
+		public MidiIn(int bufferSize = 1024, int bufferCount = 16) : base(bufferSize, bufferCount) {
+			mCallback = Callback;
+		}
 
 		public override void Open() {
 			Close();
 			AllocHeader();
-			var mr = midiInOpen(ref mHandle, DeviceId, Callback, IntPtr.Zero);
+			var mr = midiInOpen(ref mHandle, DeviceId, mCallback, IntPtr.Zero);
 			if (MMRESULT.MMSYSERR_NOERROR != mr) {
 				return;
 			}

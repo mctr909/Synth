@@ -25,7 +25,7 @@ namespace Synth {
 
 		public Instruments.OSC[] OSC = Instruments.OSC.GetDefault(8);
 		public Instruments.EG EG = Instruments.EG.GetDefault();
-		public Instruments.LFO LFO1 = new Instruments.LFO(0.1);
+		public Instruments.LFO LFO1 = new Instruments.LFO(0.01);
 		public Instruments.LFO LFO2 = new Instruments.LFO(0.0);
 
 		public double Gain = 0.5;

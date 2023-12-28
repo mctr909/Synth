@@ -20,6 +20,7 @@ namespace Synth {
 		}
 
 		private void button1_MouseDown(object sender, MouseEventArgs e) {
+			Playback.SendMessage(0, new byte[] { 0xC0, 0x00 });
 			Playback.SendMessage(0, new byte[] { 0x90, 0x20, 0x1F });
 			Playback.SendMessage(0, new byte[] { 0x90, 0x27, 0x1F });
 			Playback.SendMessage(0, new byte[] { 0x90, 0x30, 0x1F });

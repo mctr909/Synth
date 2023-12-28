@@ -9,10 +9,6 @@ namespace Synth {
 		static double[] mBufferR = null;
 
 		public static void Setup(int sampleRate, int bufferLength) {
-			if (null == mInstance) {
-				mInstance = new Playback();
-				mInstance.Open();
-			}
 			SystemValue.BufferLength = bufferLength;
 			SystemValue.SampleRate = sampleRate;
 			SystemValue.DeltaTime = 1.0 / sampleRate;
@@ -20,6 +16,10 @@ namespace Synth {
 			mChannels = Channel.Construct();
 			mBufferL = new double[SystemValue.BufferLength];
 			mBufferR = new double[SystemValue.BufferLength];
+			if (null == mInstance) {
+				mInstance = new Playback();
+			}
+			mInstance.Open();
 		}
 
 		public static void Purge() {
