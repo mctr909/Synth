@@ -88,6 +88,7 @@ namespace Synth {
 		}
 		[StructLayout(LayoutKind.Sequential)]
 		public struct WAVE_INFO {
+			public int Offset;
 			public int SampleRate;
 			public int LoopBegin;
 			public int LoopLength;
@@ -96,6 +97,8 @@ namespace Synth {
 			private ushort Reserved;
 			public double Gain;
 			public double Tune;
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 28)]
+			public string Name;
 		}
 		[StructLayout(LayoutKind.Sequential)]
 		public struct OSC {
@@ -140,10 +143,12 @@ namespace Synth {
 			public byte BankMSB;
 			public byte BankLSB;
 			public byte ProgNum;
-			public int RegionBegin;
-			public int RegionCount;
-			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 20)]
+			public int OscBegin;
+			public int OscCount;
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
 			public string Name;
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 20)]
+			public string Category;
 		}
 	}
 }
