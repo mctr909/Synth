@@ -8,11 +8,12 @@ namespace Synth {
 			Active
 		}
 
-		public Instruments.EG EG = Instruments.EG.Construct();
-		public Instruments.DELAY Delay = Instruments.DELAY.Construct();
-		public Instruments.LFO LFO1 = Instruments.LFO.Construct();
-		public Instruments.LFO LFO2 = Instruments.LFO.Construct(0.0, 1.2);
-		public Instruments.OSC[] OSC = new Instruments.OSC[8];
+		public Instruments.OSC[] OSC = Instruments.OSC.GetDefault(8);
+		public Instruments.EG EG = Instruments.EG.GetDefault();
+		public Instruments.LFO LFO1 = new Instruments.LFO(0.1);
+		public Instruments.LFO LFO2 = new Instruments.LFO(0.0);
+
+		public Instruments.DELAY Delay = new Instruments.DELAY(0.5);
 
 		public double Gain = 0.5;
 		public double Pitch = 1.0;
@@ -40,30 +41,7 @@ namespace Synth {
 			if (null == INSTANCES) {
 				INSTANCES = new Channel[16 * ports];
 				for (int i = 0; i < INSTANCES.Length; i++) {
-					var ch = new Channel();
-					ch.OSC[0].Gain = 0.33;
-					ch.OSC[0].Pitch = 1.01;
-					ch.OSC[0].Param = 0.5;
-					ch.OSC[1].Gain = 0.33;
-					ch.OSC[1].Pitch = 0.99;
-					ch.OSC[1].Param = 0.5;
-					ch.OSC[2].Gain = 0.66;
-					ch.OSC[2].Pitch = 1.0;
-					ch.OSC[2].Param = 0.5;
-					ch.OSC[3].Gain = 0.33;
-					ch.OSC[3].Pitch = 1.02;
-					ch.OSC[3].Param = 0.5;
-					ch.OSC[4].Gain = 0.33;
-					ch.OSC[4].Pitch = 0.98;
-					ch.OSC[4].Param = 0.5;
-					ch.OSC[5].Gain = 0.33;
-					ch.OSC[5].Pitch = 0.975;
-					ch.OSC[5].Param = 0.5;
-					ch.OSC[6].Gain = 0.33;
-					ch.OSC[6].Pitch = 1.025;
-					ch.OSC[6].Param = 0.5;
-
-					INSTANCES[i] = ch;
+					INSTANCES[i] = new Channel();
 				}
 			}
 			for (int i = 0; i < INSTANCES.Length; i++) {
@@ -113,15 +91,36 @@ namespace Synth {
 				break;
 			case 0xA0:
 				break;
-			case 0xB0: // Control change
+			case 0xB0:
+				ch.CtrlChg(message[1], message[2]);
 				break;
-			case 0xC0: // Program change
+			case 0xC0:
+				ch.ProgChg(message[1]);
 				break;
 			case 0xD0:
 				break;
-			case 0xE0: // Pitch bend;
+			case 0xE0:
+				ch.PitchBend(message[1], message[2]);
 				break;
 			}
+		}
+
+		void CtrlChg(int type, int value) {
+
+		}
+
+		void ProgChg(int num) {
+			OSC[0] = new Instruments.OSC(0.33, 0.975, 0, 0.5);
+			OSC[1] = new Instruments.OSC(0.25, 0.98, 0, 0.5);
+			OSC[2] = new Instruments.OSC(0.25, 0.99, 0, 0.5);
+			OSC[3] = new Instruments.OSC(0.66, 1.00, 0, 0.5);
+			OSC[4] = new Instruments.OSC(0.25, 1.01, 0, 0.5);
+			OSC[5] = new Instruments.OSC(0.25, 1.02, 0, 0.5);
+			OSC[6] = new Instruments.OSC(0.33, 1.025, 0, 0.5);
+		}
+
+		void PitchBend(int msb, int lsb) {
+
 		}
 
 		void Write() {
@@ -133,20 +132,20 @@ namespace Synth {
 
 				#region delay
 				{
-					var delayReadPos = mDelayWritePos - Delay.Time + 1.0;
-					delayReadPos -= (int)delayReadPos;
-					var readIndex = (int)(delayReadPos * SystemValue.SampleRate);
-					var delayL = mDelayTapL[readIndex];
-					var delayR = mDelayTapR[readIndex];
-					var crossL = delayL * (1.0 - Delay.Cross) + delayR * Delay.Cross;
-					var crossR = delayR * (1.0 - Delay.Cross) + delayL * Delay.Cross;
-					outputL += crossL * Delay.Send;
-					outputR += crossR * Delay.Send;
+					var readPos = mDelayWritePos - Delay.Time + 1.0;
+					readPos -= (int)readPos;
+					var readIndex = (int)(readPos * SystemValue.SampleRate);
+					var tempL = mDelayTapL[readIndex];
+					var tempR = mDelayTapR[readIndex];
+					var delayL = tempL * (1.0 - Delay.Cross) + tempR * Delay.Cross;
+					var delayR = tempR * (1.0 - Delay.Cross) + tempL * Delay.Cross;
 					mDelayWritePos -= (int)mDelayWritePos;
 					var writeIndex = (int)(mDelayWritePos * SystemValue.SampleRate);
 					mDelayWritePos += SystemValue.DeltaTime;
-					mDelayTapL[writeIndex] = outputL;
-					mDelayTapR[writeIndex] = outputR;
+					mDelayTapL[writeIndex] = outputL + delayL * Delay.Feedback;
+					mDelayTapR[writeIndex] = outputR + delayR * Delay.Feedback;
+					outputL += delayL * Delay.Send;
+					outputR += delayR * Delay.Send;
 				}
 				#endregion
 

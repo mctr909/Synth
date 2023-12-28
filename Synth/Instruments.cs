@@ -1,4 +1,6 @@
-﻿namespace Synth {
+﻿using System;
+
+namespace Synth {
 	internal class Instruments {
 		public struct EG_AMP {
 			public double Attack;
@@ -6,13 +8,13 @@
 			public double Release;
 			public double Hold;
 			public double Sustain;
-			public static EG_AMP Construct() {
+			public static EG_AMP GetDefault() {
 				return new EG_AMP() {
 					Attack = 0.001,
 					Decay = 0.1,
-					Release = 0.1,
-					Hold = 0.001,
-					Sustain = 0.66
+					Release = 0.01,
+					Hold = 1.0,
+					Sustain = 0.5
 				};
 			}
 		}
@@ -25,7 +27,7 @@
 			public double Sustain;
 			public double Fall;
 			public double Resonance;
-			public static EG_LPF Construct() {
+			public static EG_LPF GetDefault() {
 				return new EG_LPF() {
 					Attack = 0.05,
 					Decay = 0.1,
@@ -45,12 +47,12 @@
 			public double Rise;
 			public double Level;
 			public double Fall;
-			public static EG_PITCH Construct() {
+			public static EG_PITCH GetDefault() {
 				return new EG_PITCH() {
 					Attack = 0.02,
 					Decay = 0.001,
 					Release = 0.001,
-					Rise = 0.9,
+					Rise = Math.Pow(2.0, -1.0 / 12.0),
 					Level = 1.0,
 					Fall = 1.0
 				};
@@ -60,43 +62,54 @@
 			public EG_AMP Amp;
 			public EG_LPF LPF;
 			public EG_PITCH Pitch;
-			public static EG Construct() {
+			public static EG GetDefault() {
 				return new EG() {
-					Amp = EG_AMP.Construct(),
-					LPF = EG_LPF.Construct(),
-					Pitch = EG_PITCH.Construct()
+					Amp = EG_AMP.GetDefault(),
+					LPF = EG_LPF.GetDefault(),
+					Pitch = EG_PITCH.GetDefault()
 				};
 			}
 		}
 
-		public struct LFO {
-			public double Delay;
-			public double Depth;
-			public double Rate;
-			public static LFO Construct(double depth = 0.0, double rate = 4) {
-				return new LFO() {
-					Delay = 0.5,
-					Depth = depth,
-					Rate = rate
-				};
-			}
-		}
 		public struct OSC {
 			public double Gain;
 			public double Pitch;
+			public double Pan;
 			public double Param;
-			public int Pan;
+			public OSC(double gain, double pitch = 1.0, double pan = 0.0, double param = 0.0) {
+				Gain = gain;
+				Pitch = pitch;
+				Pan = pan;
+				Param = param;
+			}
+			public static OSC[] GetDefault(int count) {
+				var ret = new OSC[count];
+				ret[0] = new OSC(0.25);
+				return ret;
+			}
 		}
+
+		public struct LFO {
+			public double Depth;
+			public double Rate;
+			public double Delay;
+			public LFO(double depth, double rate = 4, double delay = 0.2) {
+				Depth = depth;
+				Rate = rate;
+				Delay = delay;
+			}
+		}
+
 		public struct DELAY {
-			public double Time;
 			public double Send;
+			public double Feedback;
+			public double Time;
 			public double Cross;
-			public static DELAY Construct() {
-				return new DELAY() {
-					Time = 0.2,
-					Send = 0.4,
-					Cross = 0.33
-				};
+			public DELAY(double send, double feedback = 0.5, double time = 0.2, double cross = 0.33) {
+				Send = send;
+				Feedback = feedback;
+				Time = time;
+				Cross = cross;
 			}
 		}
 	}
