@@ -4,31 +4,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 
 public abstract class WaveLib : IDisposable {
-	protected enum MMRESULT {
-		MMSYSERR_NOERROR = 0,
-		MMSYSERR_ERROR = (MMSYSERR_NOERROR + 1),
-		MMSYSERR_BADDEVICEID = (MMSYSERR_NOERROR + 2),
-		MMSYSERR_NOTENABLED = (MMSYSERR_NOERROR + 3),
-		MMSYSERR_ALLOCATED = (MMSYSERR_NOERROR + 4),
-		MMSYSERR_INVALHANDLE = (MMSYSERR_NOERROR + 5),
-		MMSYSERR_NODRIVER = (MMSYSERR_NOERROR + 6),
-		MMSYSERR_NOMEM = (MMSYSERR_NOERROR + 7),
-		MMSYSERR_NOTSUPPORTED = (MMSYSERR_NOERROR + 8),
-		MMSYSERR_BADERRNUM = (MMSYSERR_NOERROR + 9),
-		MMSYSERR_INVALFLAG = (MMSYSERR_NOERROR + 10),
-		MMSYSERR_INVALPARAM = (MMSYSERR_NOERROR + 11),
-		MMSYSERR_HANDLEBUSY = (MMSYSERR_NOERROR + 12),
-		MMSYSERR_INVALIDALIAS = (MMSYSERR_NOERROR + 13),
-		MMSYSERR_BADDB = (MMSYSERR_NOERROR + 14),
-		MMSYSERR_KEYNOTFOUND = (MMSYSERR_NOERROR + 15),
-		MMSYSERR_READERROR = (MMSYSERR_NOERROR + 16),
-		MMSYSERR_WRITEERROR = (MMSYSERR_NOERROR + 17),
-		MMSYSERR_DELETEERROR = (MMSYSERR_NOERROR + 18),
-		MMSYSERR_VALNOTFOUND = (MMSYSERR_NOERROR + 19),
-		MMSYSERR_NODRIVERCB = (MMSYSERR_NOERROR + 20),
-		MMSYSERR_MOREDATA = (MMSYSERR_NOERROR + 21),
-		MMSYSERR_LASTERROR = (MMSYSERR_NOERROR + 21)
-	}
 	protected enum WAVEHDR_FLAG : uint {
 		WHDR_NONE = 0,
 		WHDR_DONE = 0x00000001,
@@ -246,8 +221,8 @@ public abstract class WaveIn : WaveLib {
 			return;
 		}
 		for (int i = 0; i < mBufferCount; ++i) {
-			waveInPrepareHeader(mHandle, mpWaveHeader[i], Marshal.SizeOf(typeof(WAVEHDR)));
-			waveInAddBuffer(mHandle, mpWaveHeader[i], Marshal.SizeOf(typeof(WAVEHDR)));
+			waveInPrepareHeader(mHandle, mpWaveHeader[i], Marshal.SizeOf<WAVEHDR>());
+			waveInAddBuffer(mHandle, mpWaveHeader[i], Marshal.SizeOf<WAVEHDR>());
 		}
 		waveInStart(mHandle);
 	}
@@ -290,10 +265,10 @@ public abstract class WaveIn : WaveLib {
 				mStopped = true;
 				break;
 			}
-			var hdr = (WAVEHDR)Marshal.PtrToStructure(waveHdr, typeof(WAVEHDR));
+			var hdr = Marshal.PtrToStructure<WAVEHDR>(waveHdr);
 			Marshal.Copy(hdr.lpData, mBuffer, 0, BufferSize);
 			ReadBuffer();
-			waveInAddBuffer(mHandle, waveHdr, Marshal.SizeOf(typeof(WAVEHDR)));
+			waveInAddBuffer(mHandle, waveHdr, Marshal.SizeOf<WAVEHDR>());
 			break;
 		}
 	}
@@ -386,8 +361,8 @@ public abstract class WaveOut : WaveLib {
 			return;
 		}
 		for (int i = 0; i < mBufferCount; ++i) {
-			waveOutPrepareHeader(mHandle, mpWaveHeader[i], Marshal.SizeOf(typeof(WAVEHDR)));
-			waveOutWrite(mHandle, mpWaveHeader[i], Marshal.SizeOf(typeof(WAVEHDR)));
+			waveOutPrepareHeader(mHandle, mpWaveHeader[i], Marshal.SizeOf<WAVEHDR>());
+			waveOutWrite(mHandle, mpWaveHeader[i], Marshal.SizeOf<WAVEHDR>());
 		}
 		mBufferThread = new Thread(BufferTask) {
 			Priority = ThreadPriority.Highest
@@ -405,7 +380,7 @@ public abstract class WaveOut : WaveLib {
 			Thread.Sleep(100);
 		}
 		for (int i = 0; i < mBufferCount; ++i) {
-			waveOutUnprepareHeader(mHandle, mpWaveHeader[i], Marshal.SizeOf(typeof(WAVEHDR)));
+			waveOutUnprepareHeader(mHandle, mpWaveHeader[i], Marshal.SizeOf<WAVEHDR>());
 		}
 		var ret = waveOutReset(mHandle);
 		if (MMRESULT.MMSYSERR_NOERROR != ret) {
