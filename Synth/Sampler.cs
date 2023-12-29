@@ -73,8 +73,13 @@ namespace Synth {
 
 		public static Sampler[] Construct() {
 			var ret = new Sampler[128];
+			var rnd = new Random();
 			for (int i = 0; i < ret.Length; i++) {
-				ret[i] = new Sampler();
+				var smpl = new Sampler();
+				for (int o = 0; o < smpl.mOsc.Length; o++) {
+					smpl.mOsc[o].Phase = rnd.NextDouble();
+				}
+				ret[i] = smpl;
 			}
 			SIN_TABLE = new double[SIN_LENGTH + 1];
 			for (int i = 0; i < SIN_LENGTH; i++) {

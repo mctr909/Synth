@@ -1,5 +1,4 @@
 ﻿using System;
-using static Synth.Channel;
 using static Synth.Instruments;
 
 namespace Synth {
@@ -27,7 +26,7 @@ namespace Synth {
 
 		public OSC[] OSC = Instruments.OSC.GetDefault(8);
 		public EG EG = EG.GetDefault();
-		public LFO LFO1 = new LFO(0.01);
+		public LFO LFO1 = new LFO(0.0);
 		public LFO LFO2 = new LFO(0.0);
 
 		public double Gain = 0.5;
@@ -83,6 +82,9 @@ namespace Synth {
 			var type = message[0] & 0xF0;
 			Channel ch;
 			if (0x80 <= type && type <= 0xE0) {
+				if (9 == (message[0] & 0xF)) {
+					return;
+				}
 				var chNum = (port << 4) | message[0] & 0xF;
 				if (channels.Length <= chNum) {
 					return;
@@ -121,20 +123,22 @@ namespace Synth {
 			}
 		}
 
+		Channel() { }
+
 		void CtrlChg(int type, int value) {
 			switch (type) {
 			case 7:
 				mVol = value;
-				Gain = mVol / 127.0 * mExp / 127.0 * 0.5;
+				Gain = mVol * mVol * mExp * mExp / 16129.0 / 16129.0 * 0.5;
 				break;
 			case 11:
 				mExp = value;
-				Gain = mVol / 127.0 * mExp / 127.0 * 0.5;
+				Gain = mVol * mVol * mExp * mExp / 16129.0 / 16129.0 * 0.5;
 				break;
 			case 94:
 				mDelayFeedback = value;
 				Delay.Feedback = value / 127.0;
-				Delay.Send = value * 2 / 127.0;
+				Delay.Send = value / 127.0;
 				break;
 			}
 		}
@@ -145,12 +149,12 @@ namespace Synth {
 				EG.Pitch.Rise = 1.0;
 				EG.LPF.Attack = 0.001;
 				EG.LPF.Decay = 0.04;
-				EG.LPF.Rise = 6000 / 44100.0;
-				EG.LPF.Level = 6000 / 44100.0;
+				EG.LPF.Rise = 5000 / 44100.0;
+				EG.LPF.Level = 5000 / 44100.0;
 				EG.LPF.Sustain = 120 / 44100.0;
 				EG.LPF.Resonance = 0.33;
 				Delay.Feedback = mDelayFeedback / 127.0;
-				Delay.Send = mDelayFeedback * 2 / 127.0;
+				Delay.Send = mDelayFeedback / 127.0;
 				OSC[0] = new OSC(1.0);
 				OSC[1] = new OSC(0.0);
 				OSC[2] = new OSC(0.0);
@@ -161,8 +165,9 @@ namespace Synth {
 			} else {
 				EG = EG.GetDefault();
 				EG.Amp.Release = 0.05;
+				EG.Pitch.Rise = Math.Pow(2, 2.0 / 12.0);
 				Delay.Feedback = mDelayFeedback / 127.0;
-				Delay.Send = mDelayFeedback * 2 / 127.0;
+				Delay.Send = mDelayFeedback / 127.0;
 				OSC[0] = new OSC(0.20, Math.Pow(2, -0.3 / 12.0), 0, 0.5);
 				OSC[1] = new OSC(0.15, Math.Pow(2, -0.2 / 12.0), 0, 0.5);
 				OSC[2] = new OSC(0.15, Math.Pow(2, -0.1 / 12.0), 0, 0.5);

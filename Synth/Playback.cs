@@ -30,7 +30,7 @@ namespace Synth {
 			Channel.SendMessage(mChannels, mSamplers, port, message);
 		}
 
-		Playback() : base(SystemValue.SampleRate, 2, SystemValue.BufferLength * 2, 64) { }
+		Playback() : base(SystemValue.SampleRate, 2, SystemValue.BufferLength * 2, 16) { }
 
 		protected override void WriteBuffer() {
 			Sampler.WriteBuffer(mSamplers);

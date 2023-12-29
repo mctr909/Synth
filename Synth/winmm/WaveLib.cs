@@ -355,7 +355,7 @@ namespace WINMM {
 			return list;
 		}
 
-		public WaveOut(int sampleRate = 44100, int channels = 2, int bufferSize = 128, int bufferCount = 128) :
+		public WaveOut(int sampleRate = 44100, int channels = 2, int bufferSize = 256, int bufferCount = 16) :
 			base(sampleRate, channels, bufferSize, bufferCount) {
 			mCallback = Callback;
 		}
