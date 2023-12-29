@@ -16,7 +16,7 @@ namespace Synth {
 					Decay = 0.1,
 					Release = 0.01,
 					Hold = 1.0,
-					Sustain = 0.5
+					Sustain = 0.01
 				};
 			}
 		}
@@ -107,11 +107,11 @@ namespace Synth {
 			public byte VeloLow;
 			public byte VeloHigh;
 			public int WaveIndex;
+			public int Pan;
 			public double Gain;
 			public double Pitch;
-			public double Pan;
 			public double Param;
-			public OSC(double gain, double pitch = 1.0, double pan = 0.0, double param = 0.0) {
+			public OSC(double gain, double pitch = 1.0, int pan = 0, double param = 0.5) {
 				NoteLow = 0;
 				NoteHigh = 127;
 				VeloLow = 0;
@@ -149,6 +149,13 @@ namespace Synth {
 			public string Name;
 			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 20)]
 			public string Category;
+			public static INST GetDefaoult() {
+				return new INST() {
+					Type = TYPE.SAW,
+					Name = "Default",
+					Category = ""
+				};
+			}
 		}
 	}
 }

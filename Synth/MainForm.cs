@@ -15,7 +15,7 @@ namespace Synth {
 
 		public MainForm() {
 			InitializeComponent();
-			Playback.Setup(44100, 256);
+			Playback.Setup(44100, 512);
 			mMidiReceive = new MidiReceive();
 			mMidiReceive.SetDevice(0);
 			mMidiReceive.Open();

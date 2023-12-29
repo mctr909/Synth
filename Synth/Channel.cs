@@ -29,9 +29,10 @@ namespace Synth {
 		public LFO LFO1 = new LFO(0.0);
 		public LFO LFO2 = new LFO(0.0);
 
+		public INST Inst = INST.GetDefaoult();
+
 		public double Gain = 0.5;
 		public double Pitch = 1.0;
-		public double Pan = 0.0;
 		public double Resonance = 0.0;
 		public bool Hold = false;
 		public double[] InputL = null;
@@ -49,9 +50,15 @@ namespace Synth {
 		double[] mDelayTapL = null;
 		double[] mDelayTapR = null;
 
-		int mVol = 100;
-		int mExp = 100;
-		int mDelayFeedback = 0;
+		public byte Vol = 100;
+		public byte Exp = 100;
+		public byte Pan = 64;
+		public byte DelaySend = 0;
+		public byte ChorusSend = 0;
+		public byte BendWidth = 2;
+		short mPitch = 0;
+		byte mRpnMSB = 127;
+		byte mRpnLSB = 127;
 
 		public static Channel[] Construct(int ports = 1) {
 			var ret = new Channel[16 * ports];
@@ -110,7 +117,21 @@ namespace Synth {
 			case 0xA0:
 				break;
 			case 0xB0:
-				ch.CtrlChg(message[1], message[2]);
+				switch (message[1]) {
+				case 64:
+					ch.Hold = 64 <= message[2];
+					if (!ch.Hold) {
+						Sampler.HoldOff(samplers, ch);
+					}
+					break;
+				case 120:
+				case 123:
+					Sampler.Purge(samplers, ch);
+					break;
+				default:
+					ch.CtrlChg(message[1], message[2]);
+					break;
+				}
 				break;
 			case 0xC0:
 				ch.ProgChg(message[1]);
@@ -125,61 +146,148 @@ namespace Synth {
 
 		Channel() { }
 
-		void CtrlChg(int type, int value) {
+		void CtrlChg(byte type, byte value) {
 			switch (type) {
+			case 6:
+				if (mRpnMSB == 0 && mRpnLSB == 0) {
+					BendWidth = value;
+					mRpnMSB = 127;
+					mRpnLSB = 127;
+				}
+				break;
 			case 7:
-				mVol = value;
-				Gain = mVol * mVol * mExp * mExp / 16129.0 / 16129.0 * 0.5;
+				Vol = value;
+				Gain = Vol * Vol * Exp * Exp / 16129.0 / 16129.0 * 0.5;
+				break;
+			case 10:
+				Pan = value;
 				break;
 			case 11:
-				mExp = value;
-				Gain = mVol * mVol * mExp * mExp / 16129.0 / 16129.0 * 0.5;
+				Exp = value;
+				Gain = Vol * Vol * Exp * Exp / 16129.0 / 16129.0 * 0.5;
 				break;
 			case 94:
-				mDelayFeedback = value;
-				Delay.Feedback = value / 127.0;
+				DelaySend = value;
+				Delay.Feedback = value * 0.8 / 127.0;
 				Delay.Send = value / 127.0;
+				break;
+			case 100:
+				mRpnLSB = value;
+				break;
+			case 101:
+				mRpnMSB = value;
+				break;
+			case 121:
+				Pan = 64;
+				Vol = 100;
+				Exp = 100;
+				Gain = Vol * Vol * Exp * Exp / 16129.0 / 16129.0 * 0.5;
+				Hold = false;
+				mPitch = 0;
+				Pitch = 1.0;
 				break;
 			}
 		}
 
-		void ProgChg(int num) {
+		void ProgChg(byte num) {
 			if (32 <= num && num <= 39) {
+				if (36 == num || 37 == num || 39 == num) {
+					Inst.Type = INST.TYPE.PWM;
+				} else {
+					Inst.Type = INST.TYPE.SAW;
+				}
 				EG = EG.GetDefault();
+				EG.Amp.Decay = 0.5;
+				EG.Amp.Sustain = 0.8;
+				EG.Amp.Release = 0.005;
 				EG.Pitch.Rise = 1.0;
 				EG.LPF.Attack = 0.001;
 				EG.LPF.Decay = 0.04;
-				EG.LPF.Rise = 5000 / 44100.0;
-				EG.LPF.Level = 5000 / 44100.0;
+				EG.LPF.Rise = 4000 / 44100.0;
+				EG.LPF.Level = 4000 / 44100.0;
 				EG.LPF.Sustain = 120 / 44100.0;
-				EG.LPF.Resonance = 0.33;
-				Delay.Feedback = mDelayFeedback / 127.0;
-				Delay.Send = mDelayFeedback / 127.0;
-				OSC[0] = new OSC(1.0);
+				EG.LPF.Resonance = 0.5;
+				LFO1.Depth = 0.0;
+				Delay.Feedback = DelaySend / 127.0;
+				Delay.Send = DelaySend / 127.0;
+				OSC[0] = new OSC(0.66);
 				OSC[1] = new OSC(0.0);
 				OSC[2] = new OSC(0.0);
 				OSC[3] = new OSC(0.0);
 				OSC[4] = new OSC(0.0);
 				OSC[5] = new OSC(0.0);
 				OSC[6] = new OSC(0.0);
-			} else {
+			} else if (40 <= num && num <= 55) {
+				Inst.Type = INST.TYPE.SAW;
 				EG = EG.GetDefault();
+				EG.Amp.Decay = 0.5;
+				EG.Amp.Sustain = 0.8;
+				EG.Amp.Release = 0.1;
+				EG.LPF.Level = 8000 / 44100.0;
+				EG.LPF.Resonance = 0.0;
+				EG.Pitch.Rise = 1.0;
+				LFO1.Depth = 0.0;
+				Delay.Feedback = DelaySend / 127.0;
+				Delay.Send = DelaySend / 127.0;
+				OSC[0] = new OSC(0.30, Math.Pow(2, -0.3 / 12.0), -24, 0.5);
+				OSC[1] = new OSC(0.20, Math.Pow(2, -0.2 / 12.0), 12, 0.5);
+				OSC[2] = new OSC(0.20, Math.Pow(2, -0.1 / 12.0), -6, 0.5);
+				OSC[3] = new OSC(0.50, 1.00, 0, 0.5);
+				OSC[4] = new OSC(0.20, Math.Pow(2, 0.1 / 12.0), 6, 0.5);
+				OSC[5] = new OSC(0.20, Math.Pow(2, 0.2 / 12.0), -12, 0.5);
+				OSC[6] = new OSC(0.30, Math.Pow(2, 0.3 / 12.0), 24, 0.5);
+			} else if ((56 <= num && num <= 63) || 81 == num || (88 <= num && num <= 103)) {
+				Inst.Type = INST.TYPE.SAW;
+				EG = EG.GetDefault();
+				EG.Amp.Decay = 0.5;
+				EG.Amp.Sustain = 0.8;
 				EG.Amp.Release = 0.05;
-				EG.Pitch.Rise = Math.Pow(2, 2.0 / 12.0);
-				Delay.Feedback = mDelayFeedback / 127.0;
-				Delay.Send = mDelayFeedback / 127.0;
-				OSC[0] = new OSC(0.20, Math.Pow(2, -0.3 / 12.0), 0, 0.5);
-				OSC[1] = new OSC(0.15, Math.Pow(2, -0.2 / 12.0), 0, 0.5);
-				OSC[2] = new OSC(0.15, Math.Pow(2, -0.1 / 12.0), 0, 0.5);
-				OSC[3] = new OSC(0.30, 1.00, 0, 0.5);
-				OSC[4] = new OSC(0.15, Math.Pow(2, 0.1 / 12.0), 0, 0.5);
-				OSC[5] = new OSC(0.15, Math.Pow(2, 0.2 / 12.0), 0, 0.5);
-				OSC[6] = new OSC(0.20, Math.Pow(2, 0.3 / 12.0), 0, 0.5);
+				EG.Pitch.Rise = Math.Pow(2, 9.0 / 12.0);
+				EG.Pitch.Attack = 0.008;
+				LFO1.Delay = 0.33;
+				LFO1.Depth = Math.Pow(2, 0.3 / 12.0) - 1.0;
+				Delay.Feedback = DelaySend / 127.0;
+				Delay.Send = DelaySend / 127.0;
+				OSC[0] = new OSC(0.30, Math.Pow(2, -0.3 / 12.0), -24, 0.5);
+				OSC[1] = new OSC(0.20, Math.Pow(2, -0.2 / 12.0), 12, 0.5);
+				OSC[2] = new OSC(0.20, Math.Pow(2, -0.1 / 12.0), -6, 0.5);
+				OSC[3] = new OSC(0.50, 1.00, 0, 0.5);
+				OSC[4] = new OSC(0.20, Math.Pow(2, 0.1 / 12.0), 6, 0.5);
+				OSC[5] = new OSC(0.20, Math.Pow(2, 0.2 / 12.0), -12, 0.5);
+				OSC[6] = new OSC(0.30, Math.Pow(2, 0.3 / 12.0), 24, 0.5);
+			} else {
+				if (80 == num) {
+					Inst.Type = INST.TYPE.PWM;
+				} else {
+					Inst.Type = INST.TYPE.SAW;
+				}
+				EG = EG.GetDefault();
+				EG.Amp.Decay = 0.4;
+				EG.Amp.Sustain = 0.0;
+				EG.Amp.Release = 0.005;
+				EG.LPF.Attack = 0.001;
+				EG.LPF.Decay = 0.1;
+				EG.LPF.Rise = 10000 / 44100.0;
+				EG.LPF.Level = 10000 / 44100.0;
+				EG.LPF.Sustain = 800 / 44100.0;
+				EG.Pitch.Rise = 1.0;
+				LFO1.Depth = 0.0;
+				Delay.Feedback = DelaySend / 127.0;
+				Delay.Send = DelaySend / 127.0;
+				OSC[0] = new OSC(0.66);
+				OSC[1] = new OSC(0.0);
+				OSC[2] = new OSC(0.0);
+				OSC[3] = new OSC(0.0);
+				OSC[4] = new OSC(0.0);
+				OSC[5] = new OSC(0.0);
+				OSC[6] = new OSC(0.0);
 			}
 		}
 
-		void PitchBend(int msb, int lsb) {
-
+		void PitchBend(byte lsb, byte msb) {
+			mPitch = (short)(((msb << 7) | lsb) - 8192);
+			var v = mPitch * BendWidth / 8192.0;
+			Pitch = Math.Pow(2.0, v / 12.0);
 		}
 
 		void Write(double[] bufferL, double[] bufferR) {
