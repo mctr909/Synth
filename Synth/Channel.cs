@@ -191,11 +191,6 @@ namespace Synth {
 
 		void ProgChg(byte num) {
 			if (32 <= num && num <= 39) {
-				if (36 == num || 37 == num || 39 == num) {
-					Inst.Type = INST.TYPE.PWM;
-				} else {
-					Inst.Type = INST.TYPE.SAW;
-				}
 				EG = EG.GetDefault();
 				EG.Amp.Decay = 0.5;
 				EG.Amp.Sustain = 0.8;
@@ -203,14 +198,21 @@ namespace Synth {
 				EG.Pitch.Rise = 1.0;
 				EG.LPF.Attack = 0.001;
 				EG.LPF.Decay = 0.04;
-				EG.LPF.Rise = 4000 / 44100.0;
-				EG.LPF.Level = 4000 / 44100.0;
-				EG.LPF.Sustain = 120 / 44100.0;
-				EG.LPF.Resonance = 0.5;
+				EG.LPF.Rise = 15000 / 44100.0;
+				EG.LPF.Level = 5000 / 44100.0;
+				EG.LPF.Sustain = 220 / 44100.0;
+				if (36 == num || 37 == num || 39 == num) {
+					Inst.Type = INST.TYPE.PWM;
+					EG.LPF.Resonance = 0.5;
+					OSC[0] = new OSC(0.75,1, 0, 0.375);
+				} else {
+					Inst.Type = INST.TYPE.SAW;
+					EG.LPF.Resonance = 0.5;
+					OSC[0] = new OSC(0.75);
+				}
 				LFO1.Depth = 0.0;
 				Delay.Feedback = DelaySend / 127.0;
 				Delay.Send = DelaySend / 127.0;
-				OSC[0] = new OSC(0.66);
 				OSC[1] = new OSC(0.0);
 				OSC[2] = new OSC(0.0);
 				OSC[3] = new OSC(0.0);
@@ -223,38 +225,80 @@ namespace Synth {
 				EG.Amp.Decay = 0.5;
 				EG.Amp.Sustain = 0.8;
 				EG.Amp.Release = 0.1;
+				EG.LPF.Rise = 15000 / 44100.0;
 				EG.LPF.Level = 8000 / 44100.0;
+				EG.LPF.Sustain = 6000 / 44100.0;
+				EG.LPF.Fall = 8000 / 44100.0;
 				EG.LPF.Resonance = 0.0;
 				EG.Pitch.Rise = 1.0;
 				LFO1.Depth = 0.0;
 				Delay.Feedback = DelaySend / 127.0;
 				Delay.Send = DelaySend / 127.0;
-				OSC[0] = new OSC(0.30, Math.Pow(2, -0.3 / 12.0), -24, 0.5);
-				OSC[1] = new OSC(0.20, Math.Pow(2, -0.2 / 12.0), 12, 0.5);
-				OSC[2] = new OSC(0.20, Math.Pow(2, -0.1 / 12.0), -6, 0.5);
+				var det = 0.1;
+				OSC[0] = new OSC(0.30, Math.Pow(2, -det * 3 / 12.0), -24, 0.5);
+				OSC[1] = new OSC(0.20, Math.Pow(2, -det * 2 / 12.0), 12, 0.5);
+				OSC[2] = new OSC(0.20, Math.Pow(2, -det * 1 / 12.0), -6, 0.5);
 				OSC[3] = new OSC(0.50, 1.00, 0, 0.5);
-				OSC[4] = new OSC(0.20, Math.Pow(2, 0.1 / 12.0), 6, 0.5);
-				OSC[5] = new OSC(0.20, Math.Pow(2, 0.2 / 12.0), -12, 0.5);
-				OSC[6] = new OSC(0.30, Math.Pow(2, 0.3 / 12.0), 24, 0.5);
-			} else if ((56 <= num && num <= 63) || 81 == num || (88 <= num && num <= 103)) {
+				OSC[4] = new OSC(0.20, Math.Pow(2, det * 1 / 12.0), 6, 0.5);
+				OSC[5] = new OSC(0.20, Math.Pow(2, det * 2 / 12.0), -12, 0.5);
+				OSC[6] = new OSC(0.30, Math.Pow(2, det * 3 / 12.0), 24, 0.5);
+			} else if (56 <= num && num <= 63) {
 				Inst.Type = INST.TYPE.SAW;
 				EG = EG.GetDefault();
 				EG.Amp.Decay = 0.5;
 				EG.Amp.Sustain = 0.8;
 				EG.Amp.Release = 0.05;
-				EG.Pitch.Rise = Math.Pow(2, 9.0 / 12.0);
-				EG.Pitch.Attack = 0.008;
-				LFO1.Delay = 0.33;
-				LFO1.Depth = Math.Pow(2, 0.3 / 12.0) - 1.0;
+				EG.LPF.Rise = 15000 / 44100.0;
+				EG.LPF.Level = 8000 / 44100.0;
+				EG.LPF.Sustain = 4000 / 44100.0;
+				EG.LPF.Fall = 8000 / 44100.0;
+				EG.LPF.Resonance = 0.0;
+				EG.Pitch.Rise = Math.Pow(2, 0.0 / 12.0);
+				EG.Pitch.Attack = 0.01;
+				LFO1.Depth = 0.0;
 				Delay.Feedback = DelaySend / 127.0;
 				Delay.Send = DelaySend / 127.0;
-				OSC[0] = new OSC(0.30, Math.Pow(2, -0.3 / 12.0), -24, 0.5);
-				OSC[1] = new OSC(0.20, Math.Pow(2, -0.2 / 12.0), 12, 0.5);
-				OSC[2] = new OSC(0.20, Math.Pow(2, -0.1 / 12.0), -6, 0.5);
+				var det = 0.125;
+				OSC[0] = new OSC(0.30, Math.Pow(2, -det * 3 / 12.0), -24, 0.5);
+				OSC[1] = new OSC(0.20, Math.Pow(2, -det * 2 / 12.0), 12, 0.5);
+				OSC[2] = new OSC(0.20, Math.Pow(2, -det * 1 / 12.0), -6, 0.5);
 				OSC[3] = new OSC(0.50, 1.00, 0, 0.5);
-				OSC[4] = new OSC(0.20, Math.Pow(2, 0.1 / 12.0), 6, 0.5);
-				OSC[5] = new OSC(0.20, Math.Pow(2, 0.2 / 12.0), -12, 0.5);
-				OSC[6] = new OSC(0.30, Math.Pow(2, 0.3 / 12.0), 24, 0.5);
+				OSC[4] = new OSC(0.20, Math.Pow(2, det * 1 / 12.0), 6, 0.5);
+				OSC[5] = new OSC(0.20, Math.Pow(2, det * 2 / 12.0), -12, 0.5);
+				OSC[6] = new OSC(0.30, Math.Pow(2, det * 3 / 12.0), 24, 0.5);
+			} else if (81 == num || (88 <= num && num <= 103)) {
+				Inst.Type = INST.TYPE.SAW;
+				EG = EG.GetDefault();
+				if (num <= 95) {
+					EG.Amp.Decay = 0.5;
+					EG.Amp.Sustain = 0.8;
+					EG.Amp.Release = 0.05;
+					EG.Pitch.Rise = Math.Pow(2, 15.0 / 12.0);
+					EG.Pitch.Attack = 0.01;
+				} else {
+					EG.Amp.Decay = 0.5;
+					EG.Amp.Sustain = 0.25;
+					EG.Amp.Release = 0.5;
+					EG.Pitch.Rise = Math.Pow(2, 12.0 / 12.0);
+					EG.Pitch.Attack = 0.004;
+				}
+				EG.LPF.Rise = 15000 / 44100.0;
+				EG.LPF.Level = 8000 / 44100.0;
+				EG.LPF.Sustain = 4000 / 44100.0;
+				EG.LPF.Fall = 8000 / 44100.0;
+				EG.LPF.Resonance = 0.0;
+				LFO1.Delay = 0.33;
+				LFO1.Depth = Math.Pow(2, 0.1 / 12.0) - 1.0;
+				Delay.Feedback = DelaySend / 127.0;
+				Delay.Send = DelaySend / 127.0;
+				var det = 0.1;
+				OSC[0] = new OSC(0.30, Math.Pow(2, -det * 3 / 12.0), -24, 0.5);
+				OSC[1] = new OSC(0.20, Math.Pow(2, -det * 2 / 12.0), 12, 0.5);
+				OSC[2] = new OSC(0.20, Math.Pow(2, -det * 1 / 12.0), -6, 0.5);
+				OSC[3] = new OSC(0.50, 1.00, 0, 0.5);
+				OSC[4] = new OSC(0.20, Math.Pow(2, det * 1 / 12.0), 6, 0.5);
+				OSC[5] = new OSC(0.20, Math.Pow(2, det * 2 / 12.0), -12, 0.5);
+				OSC[6] = new OSC(0.30, Math.Pow(2, det * 3 / 12.0), 24, 0.5);
 			} else {
 				if (80 == num) {
 					Inst.Type = INST.TYPE.PWM;
@@ -262,19 +306,29 @@ namespace Synth {
 					Inst.Type = INST.TYPE.SAW;
 				}
 				EG = EG.GetDefault();
-				EG.Amp.Decay = 0.4;
-				EG.Amp.Sustain = 0.0;
+				EG.Amp.Decay = 0.2;
+				EG.Amp.Sustain = 0.25;
 				EG.Amp.Release = 0.005;
 				EG.LPF.Attack = 0.001;
 				EG.LPF.Decay = 0.1;
-				EG.LPF.Rise = 10000 / 44100.0;
+				EG.LPF.Rise = 15000 / 44100.0;
 				EG.LPF.Level = 10000 / 44100.0;
-				EG.LPF.Sustain = 800 / 44100.0;
+				EG.LPF.Sustain = 4000 / 44100.0;
+				EG.LPF.Resonance = 0.0;
 				EG.Pitch.Rise = 1.0;
 				LFO1.Depth = 0.0;
 				Delay.Feedback = DelaySend / 127.0;
 				Delay.Send = DelaySend / 127.0;
-				OSC[0] = new OSC(0.66);
+				OSC[0] = new OSC(1.0);
+				if (num <= 7) {
+					Inst.Type = INST.TYPE.PWM;
+					OSC[0].Param = 0.375;
+				}
+				if (num >= 24 && num <= 31) {
+					Inst.Type = INST.TYPE.PWM;
+					OSC[0].Param = 0.125;
+					OSC[0].Gain = 1.33;
+				}
 				OSC[1] = new OSC(0.0);
 				OSC[2] = new OSC(0.0);
 				OSC[3] = new OSC(0.0);
